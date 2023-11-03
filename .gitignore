@@ -1,0 +1,13 @@
+# Roblox project files
+/*.rbxm
+/*.rbxmx
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# Rojo sourcemap
+sourcemap.json
+
+# Wally packages
+Packages/

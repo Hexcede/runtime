@@ -1,0 +1,9 @@
+{
+	"name": "simple-runtime-sourcemap",
+	"tree": {
+		"$path": "Packages/",
+		"SimpleRuntime": {
+			"$path": "default.project.json"
+		}
+	}
+}

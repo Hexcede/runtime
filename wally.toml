@@ -1,0 +1,11 @@
+[package]
+name = "hexcede/runtime"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+Promise = "evaera/promise@4.0.0"
+Observe = "4812571/observe@0.1.4"
+Trove = "sleitnick/trove@1.0.1"
+TableUtil = "sleitnick/table-util@1.2.1"

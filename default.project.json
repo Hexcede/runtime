@@ -1,0 +1,6 @@
+{
+	"name": "simple-runtime",
+	"tree": {
+		"$path": "src"
+	}
+}
