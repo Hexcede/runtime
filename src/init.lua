@@ -198,9 +198,9 @@ end
 
 --- Stops the runtime, making it completely immutable.
 function Runtime:Stop()
-	self._trove:Clean()
 	self._isRunning = false
 	self._startupScheduler = nil
+	self._trove:Clean()
 	table.freeze(self)
 end
 
