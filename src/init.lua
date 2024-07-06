@@ -98,18 +98,16 @@ function Runtime:Handle(pattern: string, callback: HandlerCallback?, priority: n
 	-- Insert the bind handler at the index
 	table.insert(self._bindHandlers, index, handler)
 
-	-- Return cleanup function
-	return function()
-		if not handler then
-			return
-		end
-
+	-- Define cleanup function
+	local function doCleanup()
 		local index = table.find(self._bindHandlers, handler)
+
 		if index then
 			table.remove(self._bindHandlers, index)
-			handler = nil :: any
 		end
 	end
+
+	return doCleanup
 end
 
 function Runtime:_add(instance: Instance): (() -> ())?
