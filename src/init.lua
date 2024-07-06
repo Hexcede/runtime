@@ -111,38 +111,39 @@ function Runtime:Handle(pattern: string, callback: (Module: any) -> (false | () 
 end
 
 function Runtime:_add(instance: Instance): (() -> ())?
-	if instance:IsA("ModuleScript") then
-		-- If the instance is a module
-		local Module = require(instance)
-		local modulePath = instance:GetFullName()
+	-- Cancel if the instance isn't a module
+	if not instance:IsA("ModuleScript") then
+		return nil
+	end
 
-		-- Attempt to match each handler sequentially
-		for _, handler in self._bindHandlers do
-			local pattern = handler.Pattern
-			local callback = handler.Callback
+	local modulePath = instance:GetFullName()
 
-			-- If the module does not match the handler, skip
-			if not string.match(modulePath, pattern) then
-				continue
-			end
+	-- Attempt to match each handler sequentially
+	for _, handler in self._bindHandlers do
+		local pattern = handler.Pattern
+		local callback = handler.Callback
 
-			-- Call the handler & collect the cleanup callback
-			local cleanup = callback(instance, Module)
+		-- If the module does not match the handler, skip
+		if not string.match(modulePath, pattern) then
+			continue
+		end
 
-			-- Add the cleanup callback to the trove
-			if typeof(cleanup) == "function" then
-				return cleanup
-			end
+		-- Call the handler & collect the cleanup callback
+		local cleanup = callback(instance, require(instance) :: any)
 
-			-- The pattern matched. Break unless the result is `false`.
-			if cleanup ~= false then
-				break
-			end
+		-- Add the cleanup callback to the trove
+		if typeof(cleanup) == "function" then
+			return cleanup
+		end
+
+		-- The pattern matched. Break unless the result is `false`.
+		if cleanup ~= false then
+			break
 		end
 	end
 
-	-- Return nothing, there is nothing to clean up
-	return
+	-- There is nothing to clean up, return nothing
+	return nil
 end
 
 --- Adds an instance to the runtime. Only `ModuleScript`s are considered.
