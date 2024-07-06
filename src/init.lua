@@ -1,9 +1,18 @@
+--!strict
 local Packages = script.Parent
 
 local TableUtil = require(Packages.TableUtil)
 local Observe = require(Packages.Observe)
 local Promise = require(Packages.Promise)
 local Trove = require(Packages.Trove)
+
+export type HandlerCallback = (moduleInstance: ModuleScript, module: any) -> (false | () -> ())?
+
+type Handler = {
+	Pattern: string;
+	Callback: HandlerCallback?;
+	Priority: number?;
+}
 
 --- @class Runtime
 local Runtime = {}
@@ -24,6 +33,8 @@ function Runtime.new()
 
 	return self
 end
+
+export type Runtime = typeof(Runtime.new())
 
 --- Returns whether or not the runtime is running.
 function Runtime:IsRunning()
@@ -58,14 +69,14 @@ end
 ]=]
 --- @param priority -- The priority of the handler.
 --- @param callback -- The callback to run when a module is matched.
-function Runtime:Handle(pattern: string, callback: (Module: any) -> (false | () -> ())?, priority: number?): () -> ()
+function Runtime:Handle(pattern: string, callback: HandlerCallback?, priority: number?): () -> ()
 	assert(not table.isfrozen(self._bindHandlers), "The runtime cannot have any more handlers added.")
 
 	local index = #self._bindHandlers + 1
 
 	if priority then
 		-- If a priority is specified, determine at which location to place the new bind handler
-		index = TableUtil.Reduce(self._bindHandlers, function(currentIndex, handler, handlerIndex)
+		index = TableUtil.Reduce(self._bindHandlers, function(currentIndex: number, handler: Handler, handlerIndex: number)
 			-- If the new handler should take priority
 			if handler.Priority and priority > handler.Priority then
 				-- Select the inspected index if it's smaller than the current index
@@ -78,7 +89,7 @@ function Runtime:Handle(pattern: string, callback: (Module: any) -> (false | () 
 	end
 
 	-- Create the handler
-	local handler = {
+	local handler: Handler = {
 		Pattern = pattern;
 		Callback = callback;
 		Priority = priority;
@@ -190,7 +201,6 @@ end
 --- Stops the runtime, making it completely immutable.
 function Runtime:Stop()
 	self._trove:Clean()
-	self._trove = nil
 	self._isRunning = false
 	self._startupScheduler = nil
 	table.freeze(self)
