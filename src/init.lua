@@ -18,7 +18,7 @@ type Handler = {
 local Runtime = {}
 Runtime.__index = Runtime
 
---- Constructs a new [[Runtime]].
+--- Constructs a new [[Runtime]]. Runtimes can only be used once and should be discarded if you plan to stop them before server shutdown.
 function Runtime.new()
 	local self = setmetatable({}, Runtime)
 
