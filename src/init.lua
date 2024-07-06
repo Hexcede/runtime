@@ -25,15 +25,6 @@ function Runtime.new()
 	return self
 end
 
---- Destroys the runtime when the server closes.
---- Note: This binding cannot be undone, as Roblox lacks the functionality to remove it.
-function Runtime:BindToClose()
-	-- When the server is shutting down, destroy the runtime
-	game:BindToClose(function()
-		self:Destroy()
-	end)
-end
-
 --- Returns whether or not the runtime is running.
 function Runtime:IsRunning()
 	return self._isRunning
