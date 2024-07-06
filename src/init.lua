@@ -3,7 +3,7 @@ local Packages = script.Parent
 
 local TableUtil = require(Packages.TableUtil)
 local Observe = require(Packages.Observe)
-local Promise = require(Packages.Promise)
+local Future = require(Packages.Future)
 local Trove = require(Packages.Trove)
 
 export type HandlerCallback = (moduleInstance: ModuleScript, module: any) -> (false | () -> ())?
@@ -18,17 +18,22 @@ type Handler = {
 local Runtime = {}
 Runtime.__index = Runtime
 
+--- @field OnStart Future
+--- A [Future](https://util.redblox.dev/future.html) which completes when the runtime starts.
+
 --- Constructs a new [[Runtime]]. Runtimes can only be used once and should be discarded if you plan to stop them before server shutdown.
 function Runtime.new()
 	local self = setmetatable({}, Runtime)
 
 	self._isRunning = false
+	self._isUsed = false
 
 	self._bindHandlers = {}
 	self._trove = Trove.new()
 
-	self._startupScheduler = Promise.new(function(resolve, reject)
-		self._doStart = resolve
+	self.OnStart = Future.new(function()
+		self._startThread = coroutine.running()
+		coroutine.yield()
 	end)
 
 	return self
@@ -49,16 +54,18 @@ end
 	```
 	runtime:Handle("^.-Service$", function(moduleInstance: ModuleScript, module: any)
 		-- If the service has a Start method
-		if Module.Start and typeof(Module.Start) == "function" then
+		if module.Start and typeof(module.Start) == "function" then
 			-- Add the service to the scheduler
-			runtime:OnStart():andThenCall(Module.Start, Module)
+			runtime.OnStart:After(function()
+				module:Start()
+			end)
 		end
 
 		-- If the service has a Stop method
-		if Module.Stop and typeof(Module.Stop) == "function" then
+		if module.Stop and typeof(module.Stop) == "function" then
 			-- Return a function which shuts down the service when the runtime is shut down.
 			return function()
-				Module:Stop()
+				module:Stop()
 			end
 		end
 
@@ -152,7 +159,7 @@ end
 --- Adds an instance to the runtime. Only `ModuleScript`s are considered.
 --- May return a cleanup method, which will also be called when the runtime is shut down.
 function Runtime:Add(instance: Instance): (() -> ())?
-	assert(self._startupScheduler, "The Runtime is destroyed.")
+	assert(not self._isUsed, "The Runtime is destroyed.")
 
 	-- Add the instance and collect the cleanup function
 	local cleanup = self:_add(instance)
@@ -170,7 +177,7 @@ end
 --- Adds all of an instance's descendants to the runtime.
 --- Returns a function which cleans up the instances.
 function Runtime:AddDescendants(instance: Instance): () -> ()
-	assert(self._startupScheduler, "The Runtime is destroyed.")
+	assert(not self._isUsed, "The Runtime is destroyed.")
 
 	return self._trove:Add(Observe.Descendants(instance, function(instance)
 		return self:_add(instance)
@@ -180,29 +187,25 @@ end
 --- Starts the runtime. Instances may continue to be added and removed.
 --- If you would like to "restart" a runtime, you should define re-usable code which creates a new runtime instead of trying to re-use runtimes.
 function Runtime:Start()
-	local doStart = self._doStart
 	self._isRunning = true
-	self._doStart = nil
+	local startThread = self._startThread
+	self._startThread = nil
 
 	-- Freeze bind handlers
 	table.freeze(self._bindHandlers)
 
-	if doStart then
-		doStart()
+	-- Start the thread
+	if startThread then
+		coroutine.resume(startThread)
 	end
 
 	return self._startupScheduler
 end
 
---- Returns a promise which is resolved when the runtime has started. A rejected promise will be returned if the Runtime is destroyed.
-function Runtime:OnStart()
-	return self._startupScheduler or Promise.reject("The Runtime is destroyed.")
-end
-
 --- Stops the runtime, making it completely immutable.
 function Runtime:Stop()
 	self._isRunning = false
-	self._startupScheduler = nil
+	self._isUsed = true
 	self._trove:Clean()
 	table.freeze(self)
 end

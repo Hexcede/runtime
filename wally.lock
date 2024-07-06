@@ -8,14 +8,19 @@ version = "0.2.6"
 dependencies = []
 
 [[package]]
-name = "evaera/promise"
-version = "4.0.0"
-dependencies = []
-
-[[package]]
 name = "hexcede/runtime"
 version = "0.1.0"
-dependencies = [["Observe", "4812571/observe@0.2.6"], ["Promise", "evaera/promise@4.0.0"], ["TableUtil", "sleitnick/table-util@1.2.1"], ["Trove", "sleitnick/trove@1.4.0"]]
+dependencies = [["Future", "red-blox/future@1.0.1"], ["Observe", "4812571/observe@0.2.6"], ["TableUtil", "sleitnick/table-util@1.2.1"], ["Trove", "sleitnick/trove@1.4.0"]]
+
+[[package]]
+name = "red-blox/future"
+version = "1.0.1"
+dependencies = [["Spawn", "red-blox/spawn@1.1.0"]]
+
+[[package]]
+name = "red-blox/spawn"
+version = "1.1.0"
+dependencies = []
 
 [[package]]
 name = "sleitnick/table-util"
