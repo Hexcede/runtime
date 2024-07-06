@@ -6,6 +6,6 @@ realm = "shared"
 
 [dependencies]
 Promise = "evaera/promise@4.0.0"
-Observe = "4812571/observe@0.1.4"
-Trove = "sleitnick/trove@1.0.1"
+Observe = "4812571/observe@0.2.6"
+Trove = "sleitnick/trove@1.4.0"
 TableUtil = "sleitnick/table-util@1.2.1"

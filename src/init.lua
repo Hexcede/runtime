@@ -169,7 +169,7 @@ end
 function Runtime:AddDescendants(instance: Instance): () -> ()
 	assert(self._startupScheduler, "The Runtime is destroyed.")
 
-	return self._trove:Add(Observe.ObserveDescendants(instance, function(instance)
+	return self._trove:Add(Observe.Descendants(instance, function(instance)
 		return self:_add(instance)
 	end))
 end

@@ -4,7 +4,7 @@ registry = "test"
 
 [[package]]
 name = "4812571/observe"
-version = "0.1.4"
+version = "0.2.6"
 dependencies = []
 
 [[package]]
@@ -13,9 +13,9 @@ version = "4.0.0"
 dependencies = []
 
 [[package]]
-name = "hexcede/simple-runtime"
+name = "hexcede/runtime"
 version = "0.1.0"
-dependencies = [["Observe", "4812571/observe@0.1.4"], ["Promise", "evaera/promise@4.0.0"], ["TableUtil", "sleitnick/table-util@1.2.1"], ["Trove", "sleitnick/trove@1.0.1"]]
+dependencies = [["Observe", "4812571/observe@0.2.6"], ["Promise", "evaera/promise@4.0.0"], ["TableUtil", "sleitnick/table-util@1.2.1"], ["Trove", "sleitnick/trove@1.4.0"]]
 
 [[package]]
 name = "sleitnick/table-util"
@@ -24,5 +24,5 @@ dependencies = []
 
 [[package]]
 name = "sleitnick/trove"
-version = "1.0.1"
+version = "1.4.0"
 dependencies = []
