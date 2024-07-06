@@ -47,7 +47,7 @@ end
 --- Handlers may not be added to runtimes which have already been started.
 --[=[ Here's a simple example for matching services:
 	```
-	runtime:Handle("^.-Service$", function(module: Instance, Module: any)
+	runtime:Handle("^.-Service$", function(moduleInstance: ModuleScript, module: any)
 		-- If the service has a Start method
 		if Module.Start and typeof(Module.Start) == "function" then
 			-- Add the service to the scheduler
@@ -65,6 +65,9 @@ end
 		-- Return nothing, there is no cleanup to be done on shutdown.
 		return
 	end)
+
+	-- Add the contents of the Server folder
+	runtime:AddDescendants(ServerScriptService.Server)
 	```
 ]=]
 --- @param priority -- The priority of the handler.
