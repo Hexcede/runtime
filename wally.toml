@@ -2,8 +2,12 @@
 name = "hexcede/runtime"
 version = "0.2.1"
 authors = ["hexcede"]
+
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+
+exclude = ["**"]
+include = ["src", "src/*", "default.project.json", "wally.lock", "wally.toml"]
 
 [dependencies]
 Future = "red-blox/future@1.0.1"
