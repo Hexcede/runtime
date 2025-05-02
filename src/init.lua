@@ -10,7 +10,7 @@ export type HandlerCallback = (moduleInstance: ModuleScript, module: any) -> (fa
 
 type Handler = {
     Pattern: string;
-    Callback: HandlerCallback?;
+    Callback: HandlerCallback;
     Priority: number?;
 }
 
@@ -22,13 +22,15 @@ Runtime.__index = Runtime
 --- A [Future](https://util.redblox.dev/future.html) which completes when the runtime starts.
 
 --- Constructs a new [[Runtime]]. Runtimes can only be used once and should be discarded if you plan to stop them before server shutdown.
-function Runtime.new()
+function Runtime.new(): Runtime
     local self = setmetatable({}, Runtime)
+
+    self._startThread = nil :: thread?
 
     self._isRunning = false
     self._isUsed = false
 
-    self._bindHandlers = {}
+    self._bindHandlers = {} :: { Handler }
     self._trove = Trove.new()
 
     self.OnStart = Future.new(function()
@@ -42,7 +44,7 @@ end
 export type Runtime = typeof(Runtime.new())
 
 --- Returns whether or not the runtime is running.
-function Runtime:IsRunning()
+function Runtime.IsRunning(self: Runtime)
     return self._isRunning
 end
 
@@ -79,7 +81,7 @@ end
 ]=]
 --- @param priority -- The priority of the handler.
 --- @param callback -- The callback to run when a module is matched.
-function Runtime:Handle(pattern: string, callback: HandlerCallback?, priority: number?): () -> ()
+function Runtime.Handle(self: Runtime, pattern: string, callback: HandlerCallback, priority: number?): () -> ()
     assert(not table.isfrozen(self._bindHandlers), "The runtime cannot have any more handlers added.")
 
     local index = #self._bindHandlers + 1
@@ -120,7 +122,7 @@ function Runtime:Handle(pattern: string, callback: HandlerCallback?, priority: n
     return doCleanup
 end
 
-function Runtime:_add(instance: Instance): (() -> ())?
+function Runtime._add(self: Runtime, instance: Instance): (() -> ())?
     -- Cancel if the instance isn't a module
     if not instance:IsA("ModuleScript") then
         return nil
@@ -158,7 +160,7 @@ end
 
 --- Adds an instance to the runtime. Only `ModuleScript`s are considered.
 --- May return a cleanup method, which will also be called when the runtime is shut down.
-function Runtime:Add(instance: Instance): (() -> ())?
+function Runtime.Add(self: Runtime, instance: Instance): (() -> ())?
     assert(not self._isUsed, "The Runtime is destroyed.")
 
     -- Add the instance and collect the cleanup function
@@ -176,7 +178,7 @@ end
 
 --- Adds all of an instance's descendants to the runtime.
 --- Returns a function which cleans up the instances.
-function Runtime:AddDescendants(instance: Instance): () -> ()
+function Runtime.AddDescendants(self: Runtime, instance: Instance): () -> ()
     assert(not self._isUsed, "The Runtime is destroyed.")
 
     return self._trove:Add(Observe.Descendants(instance, function(instance)
@@ -186,7 +188,7 @@ end
 
 --- Starts the runtime. Instances may continue to be added and removed.
 --- If you would like to "restart" a runtime, you should define re-usable code which creates a new runtime instead of trying to re-use runtimes.
-function Runtime:Start()
+function Runtime.Start(self: Runtime)
     self._isRunning = true
     local startThread = self._startThread
     self._startThread = nil
@@ -198,12 +200,10 @@ function Runtime:Start()
     if startThread then
         coroutine.resume(startThread)
     end
-
-    return self._startupScheduler
 end
 
 --- Stops the runtime, making it completely immutable.
-function Runtime:Stop()
+function Runtime.Stop(self: Runtime)
     self._isRunning = false
     self._isUsed = true
     self._trove:Clean()
@@ -211,7 +211,7 @@ function Runtime:Stop()
 end
 
 --- Calls [[`Runtime:Stop()`]].
-function Runtime:Destroy()
+function Runtime.Destroy(self: Runtime)
     self:Stop()
 end
 
